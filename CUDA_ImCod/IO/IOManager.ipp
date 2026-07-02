@@ -68,6 +68,8 @@ void IOManager<T, Y>::loadImageChar(Image* image, unsigned char** waveletCoeffic
 * Loads and reads a frame or image. Then, it mirrors either the rightmost or bottom side of it to fit a specific size.
 * This additional size is needed to fit the image in the engine.
 */
+
+//LECTURA NO= R: 0, 3, 6 ; G: 1, 4, 7 ; B: 2, 5, 8 CORRECTA= R:0, 1, 2... X-1 G: x, X+1
 template<class T, class Y>
 void IOManager<T, Y>::loadFrameCAdaptedSizes(Image* image, unsigned char* waveletCoefficients, int iter)
 {
@@ -96,6 +98,9 @@ void IOManager<T, Y>::loadFrameCAdaptedSizes(Image* image, unsigned char* wavele
 	int i = 0;
 	int jAdded = 0;
 	int j = 0;
+	
+	auto start_insert = std::chrono::steady_clock::now();
+
 	for (i = 0; i < image->getHeight(); i++)
 	{
 		for (jAdded = 0; jAdded < addedCols; jAdded++)
@@ -104,11 +109,76 @@ void IOManager<T, Y>::loadFrameCAdaptedSizes(Image* image, unsigned char* wavele
 		}
 		offsetPerLine = offsetPerLine + jAdded;
 	}
+
+	auto finish_insert = std::chrono::steady_clock::now();
+	double finishMeasurement = std::chrono::duration_cast<std::chrono::duration<double>>(finish_insert - start_insert).count();
+	std::cout << "Insert acum time is " << iter << ": " << finishMeasurement << std::endl;
+
+
 	for (int iAdded = 0; iAdded < addedRows * image->getAdaptedWidth(); iAdded++)
 	{
 		memblock.push_back(memblock[(i*image->getAdaptedWidth()) - ((iAdded / image->getAdaptedWidth()) * image->getAdaptedWidth() + image->getAdaptedWidth()) + (iAdded%image->getAdaptedWidth())]);
 	}
+
 	std::copy(memblock.begin(), memblock.end(), waveletCoefficients);
+}
+// En IOManager.ipp
+
+template<class T, class Y>
+void IOManager<T, Y>::loadFrameCAdaptedSizesShort(Image* image, unsigned short* buffer, int iter)
+{
+    // Calculamos el tamaño en PIXELES (no bytes)
+    long long int pixelsInFrame = image->getWidth() * image->getHeight();
+    
+    std::ifstream infile;
+    infile.open(image->getName(), std::ios::binary | std::ios::in);
+
+    int w = image->getWidth();
+    int h = image->getHeight();
+    int aw = w - image->getAdaptedWidth();
+    int ah = h - image->getAdaptedHeight();
+
+    // 1. Buffer temporal para leer la imagen PURA (16 bits)
+    std::vector<unsigned short> rawBuffer(pixelsInFrame);
+
+    // Calculamos el offset en BYTES: pixels * 2 (sizeof(short))
+    long long int offsetBytes = pixelsInFrame * sizeof(unsigned short) * (long long int)iter;
+    
+    infile.seekg(offsetBytes);
+    // Leemos bytes, pero volcamos en el vector de shorts
+    infile.read(reinterpret_cast<char*>(rawBuffer.data()), pixelsInFrame * sizeof(unsigned short));
+    infile.close();
+
+    // 2. Padding con Espejo (Optimizado para Short)
+	
+    for (int y = 0; y < ah; y++)
+    {
+        // Mirroring vertical
+        int srcY = y;
+        if (y >= h) srcY = h - 1 - (y - h);
+
+        // Punteros para la fila actual
+        unsigned short* destRow = buffer + (y * aw);
+        unsigned short* srcRow = rawBuffer.data() + (srcY * w);
+
+        // A) Copiar fila real (w pixeles * 2 bytes)
+        memcpy(destRow, srcRow, w * sizeof(unsigned short));
+
+        // B) Padding Horizontal (Mirroring)
+        for (int x = w; x < aw; x++)
+        {
+            int srcX = w - 1 - (x - w);
+            destRow[x] = srcRow[srcX];
+        }
+    }
+	
+	// Ejemplo de corrección (Byte Swap)
+	for( int i = 0; i < w*h; i++ ){
+		unsigned short val = rawBuffer[i];
+		rawBuffer[i] = (val >> 8) | (val << 8); // Convierte 256 (0x0100) en 1 (0x0001)
+	}
+
+	std::copy(rawBuffer.begin(), rawBuffer.end(), buffer);
 }
 
 /*

@@ -3,7 +3,7 @@
 #define ENGINE_CUH
 #include "../IO/IOManager.hpp"
 #include "../SupportFunctions/AuxiliarFunctions.hpp"
-#include "../DWT/DWTGenerator.hpp"
+//#include "../DWT/DWTGenerator.hpp"
 #include "../BPC/BPCEngine.hpp"
 #include <cuda_runtime.h>
 #include <vector>
@@ -90,6 +90,9 @@ protected:
 	unsigned char** _HImagePixelsCharDB;
 	unsigned char* _HImagePixelsChar;
 	unsigned char** _HImagePixelsCharRGB;
+	unsigned short* _HImagePixelsShort;
+	unsigned short* _DImagePixelsShort;
+
 	cudaStream_t *_cStreams;
 	cudaEvent_t *_cEvents;
 
@@ -156,6 +159,10 @@ protected:
 	int _numOfIOStreams;
 
 	double* _measurementsBPC;
+	double* _measurementsDWT;
+	double* _measurementsDWTInit;
+	double* _measurementsRGB;
+	double* _measurementsRGB2;
 
 };
 

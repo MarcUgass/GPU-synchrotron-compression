@@ -13,6 +13,7 @@ void Engine::initLUT()
 	{
 		if (_codingPasses == 2)
 		{
+			//preguntar header ve inicialitat?
 			loadLUTHeaders(_LUTPath + "/header.txt", IOM);
 			IOM->setInputFile("");
 			IOM->setInputFolder(_LUTPath);
@@ -22,7 +23,7 @@ void Engine::initLUT()
 			int dataSizeForLUTs = (((_LUTNumberOfSubbands) * (_LUTNumberOfBitplanes) * (_LUTContextRefinement) * (_waveletLevels)) + (_LUTNumberOfBitplanes * _LUTContextRefinement) +
 				((_LUTNumberOfSubbands) * (_LUTNumberOfBitplanes) * (_LUTContextSignificance) * (_waveletLevels)) + (_LUTNumberOfBitplanes * _LUTContextSignificance) +
 				((_LUTNumberOfSubbands) * (_LUTNumberOfBitplanes) * (_LUTContextSign) * (_waveletLevels)) + (_LUTNumberOfBitplanes * _LUTContextSign)) * sizeof(int);
-			if (_LUTNFiles == 1)
+			if (_LUTNFiles == 1) 
 			{
 				GPU_HANDLE_ERROR(cudaMalloc(&(_LUTInformation[0]), _LUTAmountOfBitplaneFiles * dataSizeForLUTs));
 				hostLUT[0] = (int*)malloc(_LUTAmountOfBitplaneFiles * dataSizeForLUTs);

@@ -21,6 +21,7 @@ public:
 	void loadImageChar(Image* image, unsigned char** waveletCoefficients);
 	void loadFrameC(Image* image, unsigned char* waveletCoefficients, int iter);
 	void loadFrameCAdaptedSizes(Image* image, unsigned char* waveletCoefficients, int iter);
+	void loadFrameCAdaptedSizesShort(Image* image, unsigned short* waveletCoefficients, int iter);
 	int loadCodedFrame(Image* img, T* currentFrame, int iter, int frameSize, long long int offset);
 	void readBulkSizes (int *frameSizes, Image* img, int frames);
 	void replaceExistingFile(std::string file);

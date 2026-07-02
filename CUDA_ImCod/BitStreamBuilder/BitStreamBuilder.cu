@@ -4,7 +4,8 @@
 #include <iostream>
 #ifndef CUB_DATA
 #define CUB_DATA
-#include "../cub/cub.cuh"
+#include <cub/cub.cuh>
+//#include "../cub/cub.cuh"
 
 
 #endif
